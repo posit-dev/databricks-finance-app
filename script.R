@@ -11,8 +11,8 @@ library(glmnet)
 library(dials)
 library(tune)
 library(broom)
-library(vetiver)
-library(pins)
+# library(vetiver)
+# library(pins)
 # library(plumber)
 # library(rsconnect)
 
@@ -290,24 +290,27 @@ rmse(lend_linear_results, truth = int_rate, estimate = .pred)
 
 # Deploy Model
 # ------------------------------------------------------------------------------
-# Now let's host the model as a pin
 
-# library(vetiver)
-# library(pins)
-# library(plumber)
-# library(rsconnect)
+library(readr)
 
-v <- 
-  vetiver_model(lend_linear_fit, "lending_club_model")
-
-v |> 
-  write_rds(file = "app/vetiver-model.RDS")
+lend_linear_fit |> 
+  write_rds(file = "app/model.RDS")
 
 
 # Deploy a Model API
 # ------------------------------------------------------------------------------
 # We'd like to build an API for our app to use the model. We will make a plumber
 # API and then pin that to our board.
+
+# library(vetiver)
+# library(pins)
+# library(plumber)
+# library(rsconnect)
+
+
+## Now let's host the model as a pin
+# v <- 
+#   vetiver_model(lend_linear_fit, "lending_club_model")
 
 # board <-
 #   pins::board_connect()

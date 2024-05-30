@@ -3,13 +3,15 @@
 library(shiny)
 library(tibble)
 library(readr)
+library(workflows)
+library(recipes)
 
 source("authenticate.R")
 source("cards.R")
 source("helpers.R")
 
 rates <- connect_to_lending_club_data_on_databricks()
-model <- read_rds("vetiver-model.RDS")
+endpoint <- read_rds("model.RDS")
 
 ui <- bslib::page_navbar(
   title = "Predicted Interest Rate Calculator",
@@ -70,7 +72,7 @@ server <- function(input, output, session) {
                bc_util = bc_util(),
                bc_open_to_buy = bc_open_to_buy())
       
-      predict(model, pred_tibble)
+      predict(endpoint, new_data = pred_tibble)
     }) |> 
     bindCache(input$term, 
               input$all_balance, 

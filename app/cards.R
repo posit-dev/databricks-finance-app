@@ -105,7 +105,7 @@ foot <-
 
 plot <-
   card(full_screen = TRUE,
-       card_header(HTML("Applicants like you have received interest rates in this range")),
+       card_header(HTML("Applicants like you have received these interest rates")),
        card_body(
          plotOutput("plot")
        ))
