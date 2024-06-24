@@ -11,11 +11,57 @@ library(glmnet)
 library(dials)
 library(tune)
 library(broom)
+library(usethis)
 # library(vetiver)
 # library(pins)
 # library(plumber)
 # library(rsconnect)
 
+# Connect to Databricks
+# ------------------------------------------------------------------------------
+# Before we begin, we must connect to Databricks to access our data. A secure
+# and easy way to do this is to store our Databricks credentials as
+# environmental variables in .Renviron named DATABRICKS_HOST,
+# DATABRICKS_CLUSTER, and DATABRICKS_TOKEN. We will also use an environmental
+# variable named HTTP_PATH.
+
+# Note: this will create an empty .Renviron file if you do not already have one:
+# usethis::edit_r_environ()
+
+# For those with access to Databricks, add the historical lending rate data to
+# your catalog by running the below in Databricks:
+# CREATE TABLE lending_club USING com.databricks.spark.csv OPTIONS(path 'dbfs:/databricks-datasets/lending-club-loan-stats/LoanStats_2018Q2.csv', header "true");
+
+# library(tidyverse)
+
+# odbc::databricks() uses these environmental variables.
+# For details and alternatives, see
+# https://docs.posit.co/ide/server-pro/user/posit-workbench/guide/databricks.html#databricks-with-r
+con <-
+  dbConnect(odbc::databricks(), httpPath = Sys.getenv("HTTP_PATH"))
+
+lendingclub_dat <- 
+  dplyr::tbl(con, dbplyr::in_catalog("hive_metastore", "default", "lendingclub")) 
+
+lendingclub_dat |> 
+  show_query()
+
+lendingclub_dat |>
+  mutate(across(c(starts_with("annual")), ~ as.numeric(.))) |> 
+  select(int_rate, starts_with("annual")) |> 
+  head() |> 
+  show_query()
+
+lendingclub_subset <-
+  lendingclub_dat |>
+  mutate(across(c(starts_with("annual")), ~ as.numeric(.))) |> 
+  select(int_rate, starts_with("annual")) |> 
+  head() |> 
+  collect()
+
+# This arrangement has two advantages:
+# 1. We can use a bigger dataset because we don't need to import it into R.
+# 2. We can leverage Databricks’ fast compute.
 
 
 # Clean Data
@@ -26,11 +72,9 @@ library(broom)
 
 # library(tidyverse)
 
-con <-
-  DBI::dbConnect(odbc::databricks(), httpPath = "/sql/1.0/warehouses/300bd24ba12adf8e")
-
 lendingclub_dat <- 
   dplyr::tbl(con, dbplyr::in_catalog("hive_metastore", "default", "lendingclub")) |> 
+  # Ignore columns not available at time of loan application
   select(-c("acc_now_delinq", "chargeoff_within_12_mths",
             "debt_settlement_flag", "debt_settlement_flag_date",
             "deferral_term",

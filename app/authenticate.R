@@ -4,7 +4,9 @@ library(dbplyr)
 library(odbc)
 
 # Sys.setenv("DATABRICKS_HOST" = "your-databricks-host.com")
+# Sys.setenv("DATABRICKS_CLUSTER" = "your-databricks-cluster-id")
 # Sys.setenv("DATABRICKS_TOKEN" = "your-databricks-token")
+# Sys.setenv("HTTP_PATH" = "your-databricks-sql-warehouse")
 con <-
   dbConnect(odbc::databricks(), httpPath = Sys.getenv("HTTP_PATH"))
 
